@@ -31,14 +31,23 @@ VIDIOC_S_STD,VIDIOC_S_FMT,struct v4l2_std_id,struct v4l2_format
 #include<iostream>
 #include "CImageWidget.h"
 #include "CBuffer.h"
+#include "CImageTrans.h"
+#include <pthread.h>
+
 using namespace std;
 
 
 class CCamera {
 public:
     CCamera(string deviceName,unsigned int width, unsigned int height) :m_deviceName(deviceName),m_width(width),m_height(height){
-        m_widget =new CImageWidget(m_width,m_height);
-        m_widget->show();
+
+    }
+
+    ~CCamera(){
+        stopcapturing();
+        if (close(m_fd)==-1){
+            perror("close fd faild");
+        }
     }
     int init();
     int queryCapability();
@@ -52,8 +61,37 @@ public:
     void startCapture();
     int readFrame();
     int showPicture();
+    int getParm();       //得到当前每秒采集帧数
+    int setParm(unsigned int Denominator,unsigned int Numerator);//设置每秒采集帧数
+    int getCtrl();  //得到曝光模式(Exposure Type)，曝光值(Exposure)，增益(Gain),白平衡(WHITE_BALANCE),亮度(BRIGHTNESS)，饱和度(SATURATION)，对比度(CONTRAST)等信息
+    int setCtrl();  //设置相机参数
+
+    void stopcapturing();
+
+
+
     CImageWidget *m_widget=NULL;
 
+    static void *videoProcess(void *para) {
+
+        CCamera *pThis = (CCamera *) para;
+        while(true){
+            pThis->readFrame();
+            if(pThis->m_widget->isHidden()) break;
+        }
+    }
+
+    void createAThread() {
+        init();
+        if (pthread_create(&m_threadID, NULL, CCamera::videoProcess, this) != 0) {
+            perror("thread create faild");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    bool joinThread() {
+        return 0 == pthread_join(m_threadID, NULL) ? true : false;
+    }
 
 private:
     string m_deviceName;
@@ -63,13 +101,12 @@ private:
     unsigned int m_bufferSize=4;
 
 
-
+    pthread_t m_threadID;
     Buffer *m_buffers;
     Buffer *m_imagePaintBuffer;
 
+    CImageTrans *pImageTrans;
+    int count=0;
 };
-
-
-
 
 #endif //CAMERACOLLECTION_CCAMERA_H

@@ -2,8 +2,9 @@
 // Created by ye on 16-9-15.
 //
 
+#include <linux/videodev2.h>
 #include "CCamera.h"
-
+#include "CImageTrans.h"
 
 int CCamera::init(){
     m_fd =  open(m_deviceName.c_str(), O_RDWR);
@@ -13,6 +14,10 @@ int CCamera::init(){
         return -1;
 
     }
+
+    m_widget =new CImageWidget(m_width,m_height);
+    m_widget->show();
+    pImageTrans=new CImageTrans(m_width,m_height);
 
     v4l2_format fmt;
     fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -256,6 +261,7 @@ void CCamera::startCapture(){
         perror ("VIDIOC_STREAMON");
         exit(EXIT_FAILURE);
     }
+    cout<<"start capture pic"<<endl;
 }
 
 int CCamera::readFrame() {
@@ -281,8 +287,14 @@ int CCamera::readFrame() {
     assert (buf.index < m_bufferSize);
     printf ("%d %d: \n", buf.index, buf.bytesused);
 
+
+
+
     m_imagePaintBuffer =&m_buffers[buf.index];
     showPicture();
+
+    pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
+    pImageTrans->exportAImage(count++);
 
     if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
         perror ("VIDIOC_QBUF");
@@ -300,10 +312,106 @@ int CCamera::showPicture() {
     return 0;
 }
 
+int CCamera::getParm(){
+    struct v4l2_streamparm stream_Parm;
+    stream_Parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if(ioctl(m_fd, VIDIOC_G_PARM, &stream_Parm)==-1){
+
+        return -1;
+    }else{
+        int denominator=stream_Parm.parm.capture.timeperframe.denominator;
+        int numerator=stream_Parm.parm.capture.timeperframe.numerator;
+        cout << "帧数：  "<<denominator/numerator<<"fps"<<endl;
+        return 0;
+    }
+}
+
+int CCamera::setParm(unsigned int Denominator,unsigned int Numerator){
+    if(Denominator<Numerator){
+        perror("Denominator must bigger than Numerator");
+        exit(EXIT_FAILURE);
+    }
+    struct v4l2_streamparm stream_Parm;
+//    memset(&stream_Parm, 0, sizeof(struct v4l2_streamparm));
+    stream_Parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    stream_Parm.parm.capture.timeperframe.denominator =Denominator;;
+    stream_Parm.parm.capture.timeperframe.numerator = Numerator;
+    if(ioctl(m_fd, VIDIOC_S_PARM, &stream_Parm)==-1){
+        return -1;
+    } else{
+        return 0;
+    }
+}
+
+int CCamera::getCtrl(){
+    struct v4l2_control ctrl;
+    ctrl.id = V4L2_CID_EXPOSURE_AUTO;
+
+    if(ioctl(m_fd, VIDIOC_G_CTRL, &ctrl)==-1){
+        perror("get V4L2_CID_EXPOSURE_AUTO faild");
+        return -1;
+    }else{
+        cout<<"Exposure Type：  "<<ctrl.value<<endl;
+    }
+
+    ctrl.id = V4L2_CID_EXPOSURE_ABSOLUTE;
+    if(ioctl(m_fd, VIDIOC_G_CTRL, &ctrl)==-1){
+        perror("get V4L2_CID_EXPOSURE_AUTO faild");
+        return -1;
+    }else{
+        cout<<"EXPOSURE：  "<<ctrl.value<<endl;
+    }
 
 
+    ctrl.id = V4L2_CID_AUTO_WHITE_BALANCE;
+    if(ioctl(m_fd, VIDIOC_G_CTRL, &ctrl)==-1){
+        perror("get V4L2_CID_AUTO_WHITE_BALANCE faild");
+        return -1;
+    }else{
+        cout<<"WHITE_BALANCE：  "<<ctrl.value<<endl;
+    }
 
+    ctrl.id = V4L2_CID_GAIN;
+    if(ioctl(m_fd, VIDIOC_G_CTRL, &ctrl)==-1){
+        perror("get V4L2_CID_GAIN faild");
+        return -1;
+    }else{
+        cout<<"GAIN：  "<<ctrl.value<<endl;
+    }
 
+    return 0;
+}
 
+int CCamera::setCtrl(){
 
+    struct v4l2_queryctrl  Setting;
+    Setting.id = V4L2_CID_GAIN;
+    if(ioctl(m_fd, VIDIOC_QUERYCTRL, &Setting)==-1){
+        perror("set  VIDIOC_QUERYCTRL:V4L2_CID_GAIN failed");
+        return -1;
+    }else{
 
+    }
+
+    unsigned int Gain =0;
+    struct v4l2_control ctrl;
+    ctrl.id = V4L2_CID_GAIN;
+    ctrl.value = Gain;
+    if(ioctl(m_fd, VIDIOC_S_CTRL, &ctrl)==-1){
+        perror("set V4L2_CID_GAIN failed");
+        return -1;
+    }else{
+
+    }
+
+    return 0;
+}
+
+void CCamera::stopcapturing()
+{
+    enum v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if (-1 == ioctl (m_fd, VIDIOC_STREAMOFF, &type))
+        perror("VIDIOC_STREAMOFF faild");
+}
