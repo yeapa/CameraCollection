@@ -6,7 +6,8 @@ int main(int argc, char** argv) {
     QApplication qapp(argc,argv);
 //    ImageWidget * widget = NULL;
     CCamera camera("/dev/video0",640,480);
-    camera.init();
+    camera.createAThread();
+    camera.joinThread();
 //    camera.queryCapability();
 //    cout<<"format description"<<endl;
 //    camera.queryFormatDesc();
@@ -20,10 +21,13 @@ int main(int argc, char** argv) {
 //    string formatDesc="V4L2_PIX_FMT_RGB332";
 //    camera.tryFormat(fmt,formatDesc);
 
-    while(true){
-        camera.readFrame();
-        if(camera.m_widget->isHidden()) break;
-    }
+//    cout<<camera.setParm(10,1)<<endl;
+//    camera.getParm();
+
+//    while(true){
+//        camera.readFrame();
+//        if(camera.m_widget->isHidden()) break;
+//    }
 //    cout<<"get current format:"<<endl;
 //    camera.getCurrentFormat();
 }
