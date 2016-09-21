@@ -3,10 +3,22 @@
 //
 
 #include "CImageTrans.h"
+#include <time.h>
 void CImageTrans::exportAImage(int i){
     char * name=new char[100];
-    sprintf(name,"./image/hello%d.jpg",i);
+    sprintf(name,"%d.jpg",i);
     string picName(name);
+    picName=m_path+picName;
+    exportImage(srcImageRange(*m_pImage), vigra::ImageExportInfo(picName.c_str()).setCompression("80"));
+}
+
+void CImageTrans::exportAImage(){
+    time_t  rawtime;
+    time(&rawtime);
+    char name[100];
+    sprintf(name,"%ld.jpg",rawtime);
+    string picName(name);
+    picName=m_path+picName;
     exportImage(srcImageRange(*m_pImage), vigra::ImageExportInfo(picName.c_str()).setCompression("80"));
 }
 

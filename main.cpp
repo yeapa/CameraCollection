@@ -1,13 +1,55 @@
 #include <iostream>
 #include "CCamera.h"
 #include "CImageWidget.h"
+#include <stdio.h>
 using namespace std;
 int main(int argc, char** argv) {
     QApplication qapp(argc,argv);
 //    ImageWidget * widget = NULL;
-    CCamera camera("/dev/video0",640,480);
-    camera.createAThread();
-    camera.joinThread();
+
+//阻塞方式
+//    CCamera camera("/dev/video0",640,480,"./image/");
+//    camera.createAThread();
+//
+//    CCamera camera1("/dev/video1",640,480,"./image1/");
+//    camera1.createAThread();
+//
+//    camera.joinThread();
+//    camera1.joinThread();
+//非阻塞方式
+    CCamera camera("/dev/video0",640,480,"./image/");
+    camera.init();
+    CCamera camera1("/dev/video1",640,480,"./image1/");
+    camera1.init();
+    fd_set readFds;
+
+    int maxfd = camera.getFd()>camera1.getFd()? camera.getFd():camera1.getFd();
+    struct timeval timeout;
+    timeout.tv_sec=1;
+    timeout.tv_usec=0;
+
+    while (true){
+        FD_ZERO(&readFds);
+        FD_SET(camera.getFd(),&readFds);
+        FD_SET(camera1.getFd(),&readFds);
+
+        int ret = select(maxfd+1,&readFds,NULL,NULL,&timeout);
+        if (ret<0){
+            perror("selsct error");
+        }
+        else if(ret==0){
+            cout<<"time out"<<endl;
+        }
+        else{
+            if(FD_ISSET(camera.getFd(),&readFds)){
+                camera.readFrame();
+            }
+            if(FD_ISSET(camera1.getFd(),&readFds)){
+                camera1.readFrame();
+            }
+        }
+    }
+
 //    camera.queryCapability();
 //    cout<<"format description"<<endl;
 //    camera.queryFormatDesc();

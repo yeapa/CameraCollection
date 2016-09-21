@@ -17,7 +17,7 @@ int CCamera::init(){
 
     m_widget =new CImageWidget(m_width,m_height);
     m_widget->show();
-    pImageTrans=new CImageTrans(m_width,m_height);
+    pImageTrans=new CImageTrans(m_width,m_height,m_path);
 
     v4l2_format fmt;
     fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -286,15 +286,14 @@ int CCamera::readFrame() {
     }
     assert (buf.index < m_bufferSize);
     printf ("%d %d: \n", buf.index, buf.bytesused);
-
-
-
+    printf("thread %d read a image\n" ,m_threadID);
 
     m_imagePaintBuffer =&m_buffers[buf.index];
+
     showPicture();
 
     pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
-    pImageTrans->exportAImage(count++);
+    pImageTrans->exportAImage();
 
     if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
         perror ("VIDIOC_QBUF");
@@ -305,7 +304,9 @@ int CCamera::readFrame() {
 
 int CCamera::showPicture() {
 
+    cout<<m_imagePaintBuffer<<endl;
     m_widget->setBuf(m_imagePaintBuffer);
+
     if(m_widget->getBuf()==NULL) return -1;
     m_widget->update();
     QApplication::processEvents();

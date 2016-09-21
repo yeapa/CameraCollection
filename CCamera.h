@@ -39,7 +39,7 @@ using namespace std;
 
 class CCamera {
 public:
-    CCamera(string deviceName,unsigned int width, unsigned int height) :m_deviceName(deviceName),m_width(width),m_height(height){
+    CCamera(string deviceName,unsigned int width, unsigned int height,const string path) :m_path(path),m_deviceName(deviceName),m_width(width),m_height(height){
 
     }
 
@@ -83,7 +83,7 @@ public:
 
     void createAThread() {
         init();
-        if (pthread_create(&m_threadID, NULL, CCamera::videoProcess, this) != 0) {
+        if (pthread_create(&m_threadID, NULL, videoProcess, this) != 0) {
             perror("thread create faild");
             exit(EXIT_FAILURE);
         }
@@ -91,6 +91,10 @@ public:
 
     bool joinThread() {
         return 0 == pthread_join(m_threadID, NULL) ? true : false;
+    }
+
+    int getFd(){
+        return m_fd;
     }
 
 private:
@@ -106,6 +110,7 @@ private:
     Buffer *m_imagePaintBuffer;
 
     CImageTrans *pImageTrans;
+    const string m_path;
     int count=0;
 };
 

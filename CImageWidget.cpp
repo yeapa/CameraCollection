@@ -3,10 +3,13 @@
 //
 
 #include "CImageWidget.h"
+#include <iostream>
+
 
 void CImageWidget::paintEvent(QPaintEvent* event) {
     if(m_buffer==NULL){
         perror("m_buffer==NULL");
+        std::cout<<"hahah"<<std::endl;
     }
     if (!m_pImage)
         m_pImage = new QImage(m_width,m_height, QImage::Format_RGB888);
