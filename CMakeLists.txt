@@ -15,5 +15,5 @@ link_libraries(avformat avcodec avutil avdevice swresample swscale vigraimpex)
 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "~/Desktop/CameraCollection")
-set(SOURCE_FILES main.cpp CCamera.cpp CCamera.h CImageWidget.cpp CImageWidget.h CBuffer.h CImageTrans.cpp CImageTrans.h)
+set(SOURCE_FILES main.cpp CCamera.cpp CCamera.h CImageWidget.cpp CImageWidget.h CBuffer.h CImageTrans.cpp CImageTrans.h CMsgQueue.cpp CMsgQueue.h Message.h)
 add_executable(CameraCollection ${SOURCE_FILES})

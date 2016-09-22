@@ -33,6 +33,7 @@ VIDIOC_S_STD,VIDIOC_S_FMT,struct v4l2_std_id,struct v4l2_format
 #include "CBuffer.h"
 #include "CImageTrans.h"
 #include <pthread.h>
+#include "CMsgQueue.h"
 
 using namespace std;
 
@@ -40,6 +41,10 @@ using namespace std;
 class CCamera {
 public:
     CCamera(string deviceName,unsigned int width, unsigned int height,const string path) :m_path(path),m_deviceName(deviceName),m_width(width),m_height(height){
+
+    }
+
+    CCamera(string deviceName,unsigned int width, unsigned int height, const string path, int argc, char** argv) :m_path(path),m_deviceName(deviceName),m_width(width),m_height(height){
 
     }
 
@@ -75,6 +80,7 @@ public:
     static void *videoProcess(void *para) {
 
         CCamera *pThis = (CCamera *) para;
+        pThis->init();
         while(true){
             pThis->readFrame();
             if(pThis->m_widget->isHidden()) break;
@@ -82,7 +88,6 @@ public:
     }
 
     void createAThread() {
-        init();
         if (pthread_create(&m_threadID, NULL, videoProcess, this) != 0) {
             perror("thread create faild");
             exit(EXIT_FAILURE);
@@ -108,8 +113,10 @@ private:
     pthread_t m_threadID;
     Buffer *m_buffers;
     Buffer *m_imagePaintBuffer;
+    CMsgQueue * m_msgQueue;
 
     CImageTrans *pImageTrans;
+
     const string m_path;
     int count=0;
 };

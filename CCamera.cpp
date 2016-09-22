@@ -18,6 +18,10 @@ int CCamera::init(){
     m_widget =new CImageWidget(m_width,m_height);
     m_widget->show();
     pImageTrans=new CImageTrans(m_width,m_height,m_path);
+    m_msgQueue=new CMsgQueue(1124);
+    m_msgQueue->cmdChangeMsgmax(4147300);
+    m_msgQueue->cmdChangeMsgmnb(41473000);
+
 
     v4l2_format fmt;
     fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -284,9 +288,10 @@ int CCamera::readFrame() {
                 exit(EXIT_FAILURE);
         }
     }
+
     assert (buf.index < m_bufferSize);
     printf ("%d %d: \n", buf.index, buf.bytesused);
-    printf("thread %d read a image\n" ,m_threadID);
+    printf("thread %ld read a image\n" ,m_threadID);
 
     m_imagePaintBuffer =&m_buffers[buf.index];
 
@@ -294,6 +299,17 @@ int CCamera::readFrame() {
 
     pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
     pImageTrans->exportAImage();
+
+    uint8_t*  data = new uint8_t[m_buffers[buf.index].length];
+    memcpy(data,m_buffers[buf.index].start,m_buffers[buf.index].length);
+
+    Buffer temp;
+    temp.start=data;
+    temp.length=m_buffers[buf.index].length;
+
+    Message msg(&temp);
+    msg.m_msgType=10;
+    m_msgQueue->sendMsg(&msg);
 
     if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
         perror ("VIDIOC_QBUF");
@@ -303,8 +319,6 @@ int CCamera::readFrame() {
 }
 
 int CCamera::showPicture() {
-
-    cout<<m_imagePaintBuffer<<endl;
     m_widget->setBuf(m_imagePaintBuffer);
 
     if(m_widget->getBuf()==NULL) return -1;
