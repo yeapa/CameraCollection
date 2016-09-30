@@ -18,6 +18,7 @@ extern "C"{
 #include <impex.hxx>
 
 #include <iostream>
+#include "CMsgQueue.h"
 using namespace std;
 
 class CImageTrans {

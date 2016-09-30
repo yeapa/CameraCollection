@@ -6,7 +6,9 @@ using namespace std;
 int main(int argc, char** argv) {
     QApplication qapp(argc,argv);
 //    ImageWidget * widget = NULL;
-
+//    CCamera camera("/dev/video0",1920,1080,"./image/");
+//    camera.init();
+//    camera.readFrame();
 //阻塞方式
     CCamera camera("/dev/video0",1920,1080,"./image/");
     camera.createAThread();
@@ -17,8 +19,6 @@ int main(int argc, char** argv) {
     camera.joinThread();
 //    camera1.joinThread();
 //非阻塞方式
-//    CCamera camera("/dev/video0",1920,1080,"./image/");
-//    camera.init();
 //    CCamera camera1("/dev/video1",1920,1080,"./image1/");
 //    camera1.init();
 //    fd_set readFds;

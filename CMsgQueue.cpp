@@ -30,11 +30,9 @@ int CMsgQueue::sendMsg(Message *p)
     //MSG_NOERROR:若返回的消息比nbytes字节多,则消息就会截短到nbytes字节,且不通知消息发送进程.
     //IPC_NOWAIT:调用进程会立即返回.若没有收到消息则返回-1.
     //0:msgrcv调用阻塞直到条件满足为止.
-    if(msgsnd(m_iMsgQueueID, (void *)(p), sizeof(p->m_msgBuffer), 0) == -1)
+    if(msgsnd(m_iMsgQueueID, (void *)(p), sizeof(p->m_data)+sizeof(unsigned int), 0) == -1)
     {
         perror("send message faild");
-//        cout<<"start address: "<<p->m_msgBuffer->start<<endl;
-        fprintf(stderr, "msgsnd failed\n");
         return -1;
     }
     return 0;
@@ -42,7 +40,7 @@ int CMsgQueue::sendMsg(Message *p)
 
 int CMsgQueue::receiveMsg(Message *p,long int msgtype)
 {
-    if(msgrcv(m_iMsgQueueID, p, 10, msgtype, 0) == -1)
+    if(msgrcv(m_iMsgQueueID, p, sizeof(p->m_data)+sizeof(unsigned int), msgtype, 0) == -1)
     {
         fprintf(stderr, "msgrcv failed with errno: %d\n", errno);
         return -1;

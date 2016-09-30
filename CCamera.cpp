@@ -19,8 +19,8 @@ int CCamera::init(){
     m_widget->show();
     pImageTrans=new CImageTrans(m_width,m_height,m_path);
     m_msgQueue=new CMsgQueue(1124);
-    m_msgQueue->cmdChangeMsgmax(4147300);
-    m_msgQueue->cmdChangeMsgmnb(41473000);
+//    m_msgQueue->cmdChangeMsgmax(4147300);
+//    m_msgQueue->cmdChangeMsgmnb(41473000);
 
 
     v4l2_format fmt;
@@ -294,21 +294,15 @@ int CCamera::readFrame() {
     printf("thread %ld read a image\n" ,m_threadID);
 
     m_imagePaintBuffer =&m_buffers[buf.index];
-
     showPicture();
 
     pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
     pImageTrans->exportAImage();
 
-    uint8_t*  data = new uint8_t[m_buffers[buf.index].length];
-    memcpy(data,m_buffers[buf.index].start,m_buffers[buf.index].length);
 
-    Buffer temp;
-    temp.start=data;
-    temp.length=m_buffers[buf.index].length;
-
-    Message msg(&temp);
-    msg.m_msgType=10;
+    Message msg(m_buffers[buf.index].length);
+    msg.m_msgType=1;
+    memcpy(msg.m_data,m_buffers[buf.index].start,m_buffers[buf.index].length);
     m_msgQueue->sendMsg(&msg);
 
     if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
