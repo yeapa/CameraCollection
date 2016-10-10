@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 //    camera.init();
 //    camera.readFrame();
 //阻塞方式
-    CCamera camera("/dev/video0",1920,1080,"./image/");
+    CCamera camera("/dev/video0",640,480,"./image/");
     camera.createAThread();
 
 //    CCamera camera1("/dev/video1",1920,1080,"./image1/");

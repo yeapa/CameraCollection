@@ -19,8 +19,10 @@ int CCamera::init(){
     m_widget->show();
     pImageTrans=new CImageTrans(m_width,m_height,m_path);
     m_msgQueue=new CMsgQueue(1124);
-//    m_msgQueue->cmdChangeMsgmax(4147300);
-//    m_msgQueue->cmdChangeMsgmnb(41473000);
+    m_deviceNum=m_deviceName.at(m_deviceName.size()-1)-'0'+1;
+    cout<<m_videoID<<endl;
+//    m_msgQueue->cmdChangeMsgmax(614404);
+//    m_msgQueue->cmdChangeMsgmnb(6144040);
 
 
     v4l2_format fmt;
@@ -296,14 +298,15 @@ int CCamera::readFrame() {
     m_imagePaintBuffer =&m_buffers[buf.index];
     showPicture();
 
+    Message msg(m_buffers[buf.index].length,m_deviceNum);
+    memcpy(msg.m_data,m_buffers[buf.index].start,m_buffers[buf.index].length);
+    m_msgQueue->sendMsg(&msg);
+
     pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
     pImageTrans->exportAImage();
 
 
-    Message msg(m_buffers[buf.index].length);
-    msg.m_msgType=1;
-    memcpy(msg.m_data,m_buffers[buf.index].start,m_buffers[buf.index].length);
-    m_msgQueue->sendMsg(&msg);
+
 
     if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
         perror ("VIDIOC_QBUF");

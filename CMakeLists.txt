@@ -9,8 +9,8 @@ link_directories(-L/usr/lib/x86_64-linux-gnu)
 link_libraries(-lQtGui -lQtCore -lpthread)
 
 #ffmpeg
-include_directories(/usr/local/ffmpeg2/include /usr/include/vigra)
-link_directories(/usr/local/ffmpeg2/lib  /usr/lib)
+include_directories(/usr/local/ffmpeg/include /usr/include/vigra)
+link_directories(/usr/local/ffmpeg/lib  /usr/lib)
 link_libraries(avformat avcodec avutil avdevice swresample swscale vigraimpex)
 
 

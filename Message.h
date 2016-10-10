@@ -10,9 +10,9 @@ struct Message
 {
 public:
     long int m_msgType;
-    char m_data[4147200];
+    char m_data[614400];
     unsigned int m_length;
-    Message(int length,long int msgType=1)
+    Message(unsigned int length=61440, long int msgType=1)
     {
         m_msgType=msgType;
         m_length=length;

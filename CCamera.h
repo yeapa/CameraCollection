@@ -105,6 +105,7 @@ public:
 private:
     string m_deviceName;
     int m_fd=-1;
+    int m_deviceNum;
     unsigned int m_width;
     unsigned int m_height;
     unsigned int m_bufferSize=4;
