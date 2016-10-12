@@ -83,7 +83,7 @@ public:
         pThis->init();
         while(true){
             pThis->readFrame();
-            if(pThis->m_widget->isHidden()) break;
+//            if(pThis->m_widget->isHidden()) break;
         }
     }
 

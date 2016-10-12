@@ -12,18 +12,19 @@ int CCamera::init(){
         perror("error in open device %s");
         exit(EXIT_FAILURE);
         return -1;
-
     }
 
-    m_widget =new CImageWidget(m_width,m_height);
-    m_widget->show();
+//    m_widget =new CImageWidget(m_width,m_height);
+//    m_widget->show();
     pImageTrans=new CImageTrans(m_width,m_height,m_path);
-    m_msgQueue=new CMsgQueue(1124);
-    m_deviceNum=m_deviceName.at(m_deviceName.size()-1)-'0'+1;
-    cout<<m_videoID<<endl;
-//    m_msgQueue->cmdChangeMsgmax(614404);
-//    m_msgQueue->cmdChangeMsgmnb(6144040);
 
+
+    m_deviceNum=m_deviceName.at(m_deviceName.size()-1)-'0'+1;
+    cout<<"device name:"<<m_deviceName<<endl;
+    m_msgQueue=new CMsgQueue(1000+m_deviceNum);
+    cout<<"device number: "<<m_deviceNum<<endl;
+
+//
 
     v4l2_format fmt;
     fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -32,10 +33,10 @@ int CCamera::init(){
     fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
     fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
     setFormat(fmt);
+    getCurrentFormat();
 
     setMmap();
     startCapture();
-
     return 0;
 }
 
@@ -253,7 +254,7 @@ void CCamera::startCapture(){
 //        memset(&buf, 0, sizeof(buf));
         buf.type        = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory      = V4L2_MEMORY_MMAP;
-        buf.index       = i;
+         buf.index       = i;
 
         if (-1 == ioctl (m_fd, VIDIOC_QBUF, &buf)) {
             perror ("VIDIOC_QBUF");
@@ -270,7 +271,7 @@ void CCamera::startCapture(){
     cout<<"start capture pic"<<endl;
 }
 
-int CCamera::readFrame() {
+int CCamera::readFrame(){
     v4l2_buffer buf;
 
 //    memset(&buf, 0, sizeof(buf));
@@ -295,12 +296,13 @@ int CCamera::readFrame() {
     printf ("%d %d: \n", buf.index, buf.bytesused);
     printf("thread %ld read a image\n" ,m_threadID);
 
-    m_imagePaintBuffer =&m_buffers[buf.index];
-    showPicture();
+//    m_imagePaintBuffer =&m_buffers[buf.index];
+//    showPicture();
 
     Message msg(m_buffers[buf.index].length,m_deviceNum);
     memcpy(msg.m_data,m_buffers[buf.index].start,m_buffers[buf.index].length);
     m_msgQueue->sendMsg(&msg);
+    printf("thread %ld send a image\n" ,m_threadID);
 
     pImageTrans->transform((unsigned char*)m_buffers[buf.index].start);
     pImageTrans->exportAImage();

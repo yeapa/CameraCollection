@@ -9,15 +9,30 @@ int main(int argc, char** argv) {
 //    CCamera camera("/dev/video0",1920,1080,"./image/");
 //    camera.init();
 //    camera.readFrame();
+
 //阻塞方式
-    CCamera camera("/dev/video0",640,480,"./image/");
+//    CMsgQueue::cmdChangeMsgmax(4147204);
+//    CMsgQueue::cmdChangeMsgmnb(41472040);
+//    CMsgQueue * queue = new CMsgQueue(1001);
+//    queue->Delete();
+
+    CCamera camera("/dev/video0",1920,1080,"./image/");
     camera.createAThread();
 
-//    CCamera camera1("/dev/video1",1920,1080,"./image1/");
-//    camera1.createAThread();
+    CCamera camera1("/dev/video1",1920,1080,"./image1/");
+    camera1.createAThread();
+
+    CCamera camera2("/dev/video2",1920,1080,"./image2/");
+    camera2.createAThread();
+
+    CCamera camera3("/dev/video3",1920,1080,"./image3/");
+    camera3.createAThread();
 
     camera.joinThread();
-//    camera1.joinThread();
+    camera1.joinThread();
+    camera2.joinThread();
+    camera3.joinThread();
+
 //非阻塞方式
 //    CCamera camera1("/dev/video1",1920,1080,"./image1/");
 //    camera1.init();
